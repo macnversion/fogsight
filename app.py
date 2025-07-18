@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 from datetime import datetime
 from typing import AsyncGenerator, List, Optional
 
@@ -20,13 +21,17 @@ from fastapi.staticfiles import StaticFiles
 shanghai_tz = pytz.timezone("Asia/Shanghai")
 
 credentials = json.load(open("credentials.json"))
-API_KEY = credentials["API_KEY"]
+API_KEY_ENV_NAME = credentials["API_KEY"]
 BASE_URL = credentials["BASE_URL"]
+MODEL_NAME = credentials.get("model", "gemini-2.5-pro")  # 从配置文件读取模型名称，默认为 gemini-2.5-pro
+
+# 从环境变量获取实际的 API_KEY
+API_KEY = os.getenv(API_KEY_ENV_NAME)
+
+if not API_KEY:
+    raise RuntimeError(f"请在环境变量 {API_KEY_ENV_NAME} 中配置 API_KEY")
 
 client = AsyncOpenAI(api_key=API_KEY, base_url=BASE_URL)
-
-if API_KEY.startswith("sk-REPLACE_ME"):
-    raise RuntimeError("请在环境变量里配置 API_KEY")
 
 templates = Jinja2Templates(directory="templates")
 
@@ -53,9 +58,13 @@ class ChatRequest(BaseModel):
 async def llm_event_stream(
     topic: str,
     history: Optional[List[dict]] = None,
-    model: str = "gemini-2.5-pro", # Changed model for better performance if needed
+    model: str = None,  # 模型名称将从配置文件读取
 ) -> AsyncGenerator[str, None]:
     history = history or []
+    
+    # 如果没有指定模型，使用配置文件中的模型
+    if model is None:
+        model = MODEL_NAME
     
     # The system prompt is now more focused
     system_prompt = f"""请你生成一个非常精美的动态动画,讲讲 {topic}

@@ -85,7 +85,7 @@
 
 1. **克隆代码仓库:**
    ```bash
-   git clone https://github.com/fogsightai/fogsight.git
+   git clone https://github.com/macnversion/fogsight.git
    cd fogsight
    ```
 
@@ -100,8 +100,9 @@
    ```bash
    cp demo-credentials.json credentials.json
    # 复制 demo-credentials.json 文件并重命名为 credentials.json
-   # 编辑 credentials.json 文件，填入您的 API_KEY 和 BASE_URL。
-   # **请注意**，我们使用的是与 OpenAI 兼容的 SDK，但您仍应使用Gemini 2.5 pro
+   # 编辑 credentials.json 文件，设置 active_provider 并填入对应的 API_KEY 和 BASE_URL
+   # 支持多个 LLM 提供商：Gemini、OpenAI、Claude、Kimi、Ark 等
+   # 只需修改 active_provider 字段即可切换不同的 LLM 服务
    ```
 
 4. **一键启动:**

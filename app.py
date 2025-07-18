@@ -21,15 +21,25 @@ from fastapi.staticfiles import StaticFiles
 shanghai_tz = pytz.timezone("Asia/Shanghai")
 
 credentials = json.load(open("credentials.json"))
-API_KEY_ENV_NAME = credentials["API_KEY"]
-BASE_URL = credentials["BASE_URL"]
-MODEL_NAME = credentials.get("model", "gemini-2.5-pro")  # 从配置文件读取模型名称，默认为 gemini-2.5-pro
+active_provider = credentials.get("active_provider")
+if not active_provider:
+    raise RuntimeError("请在 credentials.json 中指定 active_provider")
+
+if active_provider not in credentials.get("providers", {}):
+    available_providers = list(credentials.get("providers", {}).keys())
+    raise RuntimeError(f"指定的 provider '{active_provider}' 不存在。可用的 providers: {available_providers}")
+
+provider_config = credentials["providers"][active_provider]
+
+API_KEY_ENV_NAME = provider_config["API_KEY"]
+BASE_URL = provider_config["BASE_URL"]
+MODEL_NAME = provider_config["model"]
 
 # 从环境变量获取实际的 API_KEY
 API_KEY = os.getenv(API_KEY_ENV_NAME)
 
 if not API_KEY:
-    raise RuntimeError(f"请在环境变量 {API_KEY_ENV_NAME} 中配置 API_KEY")
+    raise RuntimeError(f"请在环境变量 {API_KEY_ENV_NAME} 中配置 API_KEY (当前使用provider: {active_provider})")
 
 client = AsyncOpenAI(api_key=API_KEY, base_url=BASE_URL)
 

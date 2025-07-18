@@ -1,0 +1,188 @@
+html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>赋予概念以生命 ‑ Bringing-Concepts-to-Life</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:"Helvetica Neue",Helvetica,Arial,"PingFang SC",sans-serif;}
+        body{background:#fafafa;overflow:hidden;cursor:none;}
+        #screen{position:absolute;top:0;left:0;width:100%;height:100%;max-width:2560px;max-height:1440px;background:#fafafa;left:50%;top:50%;transform:translate(-50%,-50%);}
+        svg{position:absolute;width:100%;height:100%;z-index:2}
+        text{font-size:36px;fill:#333;font-weight:600}
+        .subtitle{position:absolute;bottom:70px;width:100%;text-align:center;font-size:24px;color:#444;z-index:10}
+        .particle{position:absolute;border-radius:50%;pointer-events:none;z-index:0}
+        .cursor{position:fixed;top:0;left:0;width:20px;height:20px;border-radius:50%;background:#0077ff;transform:translate(-50%,-50%);pointer-events:none;z-index:9999}
+    </style>
+</head>
+<body>
+    <div id="screen">
+        <div class="cursor"></div>
+        <svg viewBox="0 0 2560 1440">
+            <!-- 背景渐变 -->
+            <defs>
+                <radialGradient id="bgGrad" cx="50%" cy="50%" r="80%">
+                    <stop offset="0%" stop-color="#ffffff"/>
+                    <stop offset="100%" stop-color="#e6f0ff"/>
+                </radialGradient>
+                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="12" result="blur"/>
+                    <feMerge>
+                        <feMergeNode in="blur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            <rect width="2560" height="1440" fill="url(#bgGrad)"/>
+
+            <!-- 初始孤独灯泡 -->
+            <g id="bulb" opacity="0">
+                <circle cx="1280" cy="720" r="150" fill="#fff" stroke="#ccc" stroke-width="4"/>
+                <text x="1280" y="730" text-anchor="middle" font-size="120" fill="#333">💡</text>
+            </g>
+
+            <!-- 概念之树 -->
+            <g id="tree" opacity="0">
+                <!-- 树干 -->
+                <path d="M1280 840 L1280 1080" stroke="#8a5a44" stroke-width="20"/>
+                <!-- 分支 -->
+                <g stroke="#8a5a44" stroke-width="12" fill="none">
+                    <path d="M1280 900 L1120 800"/>
+                    <path d="M1280 920 L1440 810"/>
+                    <path d="M1280 860 L1200 750"/>
+                    <path d="M1280 880 L1360 760"/>
+                </g>
+                <!-- 概念叶片 -->
+                <g id="leaves"></g>
+            </g>
+
+            <!-- 人物剪影 -->
+            <g id="figure" opacity="0">
+                <circle cx="1280" cy="720" r="60" fill="#333"/>
+                <path d="M1280 780 L1280 920 M1280 820 L1190 950 M1280 820 L1370 950" stroke="#333" stroke-width="20"/>
+            </g>
+
+            <!-- 飞鸟 -->
+            <g id="birds"></g>
+
+            <!-- 粒子火花 -->
+            <g id="sparks"></g>
+        </svg>
+
+        <!-- 双语字幕 -->
+        <div class="subtitle" id="sub1">
+            <div>故事始于一个孤零零的“灯泡”</div>
+            <div>The story begins with a lonely lightbulb</div>
+        </div>
+        <div class="subtitle" id="sub2" style="opacity:0">
+            <div>抽象符号 ↓ 具象元素</div>
+            <div>Abstract symbol ↓ Concrete element</div>
+        </div>
+        <div class="subtitle" id="sub3" style="opacity:0">
+            <div>概念之树开始发芽</div>
+            <div>The tree of concepts begins to sprout</div>
+        </div>
+        <div class="subtitle" id="sub4" style="opacity:0">
+            <div>人物与概念互动，赋予它意义</div>
+            <div>Human interaction gives meaning to concepts</div>
+        </div>
+        <div class="subtitle" id="sub5" style="opacity:0">
+            <div>知识被放飞，成为可传播的“飞鸟”</div>
+            <div>Knowledge takes flight as shareable 'birds'</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        // 时间轴
+        const tl = gsap.timeline({repeat:0, defaults:{ease:"power2.inOut"}});
+
+        // 光标跟随
+        const cursor = document.querySelector('.cursor');
+        window.addEventListener('mousemove',e=>{
+            gsap.to(cursor,{x:e.clientX,y:e.clientY,duration:.1});
+        });
+
+        // 生成粒子
+        function createParticle(x,y,color){
+            const p = document.createElement('div');
+            p.className='particle';
+            p.style.left=x+'px';
+            p.style.top=y+'px';
+            p.style.width=p.style.height='10px';
+            p.style.background=color;
+            document.getElementById('screen').appendChild(p);
+            gsap.fromTo(p,
+                {scale:0,opacity:1},
+                {scale:2,opacity:0,duration:1.5,onComplete:()=>p.remove()}
+            );
+        }
+
+        // 叶片内容
+        const leafData = [
+            {x:1120,y:800,text:"创意"},
+            {x:1440,y:810,text:"逻辑"},
+            {x:1200,y:750,text:"情感"},
+            {x:1360,y:760,text:"记忆"}
+        ];
+
+        leafData.forEach(d=>{
+            const leaf = document.createElementNS("http://www.w3.org/2000/svg","text");
+            leaf.setAttribute("x",d.x);
+            leaf.setAttribute("y",d.y);
+            leaf.setAttribute("text-anchor","middle");
+            leaf.setAttribute("font-size","36");
+            leaf.setAttribute("fill","#28a745");
+            leaf.textContent = d.text;
+            document.getElementById("leaves").appendChild(leaf);
+        });
+
+        // 动画序列
+        tl.to("#bulb",{opacity:1,duration:1})
+          .to("#sub1",{opacity:0,duration:.6})
+          .to("#sub2",{opacity:1,duration:.6}, "-=.4")
+          .to("#bulb",{scale:1.2,duration:1}, "-=.4")
+          .to("#tree",{opacity:1,duration:1},"+=.2")
+          .to("#sub2",{opacity:0},"-=.4")
+          .to("#sub3",{opacity:1},"-=.2")
+          .from("#tree path",{strokeDashoffset:1000,duration:2,ease:"power2.out"},"-=.5")
+          .from("#leaves text",{y:-40,opacity:0,stagger:.3,duration:.6},"-=.8")
+          .to("#sub3",{opacity:0},"+=1")
+          .to("#sub4",{opacity:1})
+          .to("#figure",{opacity:1,duration:.8},"-=.5")
+          .to("#figure",{y:-20,yoyo:true,repeat:3,duration:.6},"-=.4")
+          .to("#leaves text",{fontSize:46,duration:.6,stagger:.2},"-=.8")
+          .to("#sub4",{opacity:0},"+=1")
+          .to("#sub5",{opacity:1})
+          .call(()=>{
+              // 生成飞鸟
+              for(let i=0;i<10;i++){
+                  setTimeout(()=>createBird(),i*180);
+              }
+          });
+
+        // 飞鸟
+        function createBird(){
+            const bird = document.createElementNS("http://www.w3.org/2000/svg","text");
+            bird.textContent = "✈️";
+            bird.setAttribute("font-size","48");
+            bird.setAttribute("x","1280");
+            bird.setAttribute("y","720");
+            document.getElementById("birds").appendChild(bird);
+            gsap.to(bird,
+                {x:Math.random()*1000+300,y:-200,duration:3+Math.random()*2,ease:"power1.out"}
+            );
+            gsap.to(bird,{opacity:0,duration:1,delay:2,onComplete:()=>bird.remove()});
+            createParticle(1280+Math.random()*200-100,720+Math.random()*200-100,"#ff6b6b");
+        }
+
+        // 火花粒子循环
+        setInterval(()=>{
+            if(Math.random()<0.4){
+                createParticle(Math.random()*window.innerWidth,Math.random()*window.innerHeight,"#4dabff");
+            }
+        },600);
+    </script>
+</body>
+</html>
